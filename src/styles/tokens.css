@@ -1,0 +1,116 @@
+/* Design tokens — "Premium Engineering Field Intelligence": orange accent on warm graphite.
+   Blue is intentionally absent from the brand palette (design.md §4). */
+:root {
+  color-scheme: dark;
+  --bg: #0f0f10;
+  --bg-2: #131314;
+  --surface: #18181a;
+  --surface-2: #1d1d20;
+  --surface-3: #252528;
+  --surface-sunk: #0c0c0d;
+  --border: #2d2d31;
+  --border-strong: #44444a;
+  --border-soft: #222225;
+  --text: #f5f5f4;
+  --text-2: #b8b6b0;
+  --text-muted: #8a8882;
+  --text-inv: #1a1206;
+
+  --brand: #f97316;
+  --brand-2: #ea580c;
+  --brand-3: #c2410c;
+  --brand-soft: #fdba74;
+  --brand-ink: #fdba74;
+  --brand-wash: rgba(249, 115, 22, 0.1);
+  --brand-wash-2: rgba(249, 115, 22, 0.18);
+  --brand-line: rgba(249, 115, 22, 0.55);
+
+  --ok: #22c55e;
+  --ok-ink: #4ade80;
+  --ok-wash: rgba(34, 197, 94, 0.1);
+  --ok-line: rgba(34, 197, 94, 0.45);
+  --warn: #f59e0b;
+  --warn-ink: #fbbf24;
+  --warn-wash: rgba(245, 158, 11, 0.1);
+  --warn-line: rgba(245, 158, 11, 0.45);
+  --fail: #ef4444;
+  --fail-ink: #f87171;
+  --fail-wash: rgba(239, 68, 68, 0.1);
+  --fail-line: rgba(239, 68, 68, 0.5);
+
+  /* drawing */
+  --grid: #222225;
+  --grid-2: #1a1a1c;
+  --axis: #4a4a50;
+  --tick: #a3a19b;
+  --ground: #8f8574;
+  --ground-fill: rgba(143, 133, 116, 0.12);
+  --soil-1: #2a2622;
+  --soil-2: #221f1c;
+  --water: rgba(148, 163, 150, 0.16);
+  --water-line: #9aa89c;
+  --bore: rgba(160, 140, 110, 0.22);
+  --pipe: #f97316;
+  --pipe-steel: #b9b9bd;
+  --dim: #d6d3cd;
+
+  --sans: 'Inter', 'Segoe UI', system-ui, -apple-system, Roboto, Arial, sans-serif;
+  --mono: 'IBM Plex Mono', 'JetBrains Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  --hdr-h: 56px;
+  --side-w: 248px;
+  --side-w-c: 64px;
+  --radius: 8px;
+  --radius-s: 6px;
+  --radius-l: 12px;
+  --shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+  --shadow-pop: 0 12px 32px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.35);
+  --focus: 0 0 0 2px var(--bg), 0 0 0 4px var(--brand);
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+  --bg: #f4f4f2;
+  --bg-2: #efefec;
+  --surface: #ffffff;
+  --surface-2: #fafaf9;
+  --surface-3: #f0efec;
+  --surface-sunk: #f6f6f4;
+  --border: #e3e2de;
+  --border-strong: #cfcdc7;
+  --border-soft: #ecebe8;
+  --text: #171717;
+  --text-2: #3f3f3c;
+  --text-muted: #6b6a65;
+  --brand-ink: #c2410c;
+  --brand-wash: rgba(249, 115, 22, 0.09);
+  --brand-wash-2: rgba(249, 115, 22, 0.16);
+  --brand-line: rgba(194, 65, 12, 0.5);
+  --ok: #16a34a;
+  --ok-ink: #15803d;
+  --ok-wash: rgba(22, 163, 74, 0.08);
+  --ok-line: rgba(22, 163, 74, 0.4);
+  --warn: #d97706;
+  --warn-ink: #b45309;
+  --warn-wash: rgba(217, 119, 6, 0.09);
+  --warn-line: rgba(217, 119, 6, 0.4);
+  --fail: #dc2626;
+  --fail-ink: #b91c1c;
+  --fail-wash: rgba(220, 38, 38, 0.07);
+  --fail-line: rgba(220, 38, 38, 0.4);
+  --grid: #ebeae6;
+  --grid-2: #f3f2ef;
+  --axis: #bdbab3;
+  --tick: #52504b;
+  --ground: #7a6e5a;
+  --ground-fill: rgba(122, 110, 90, 0.1);
+  --soil-1: #efe9df;
+  --soil-2: #e8e1d5;
+  --water: rgba(120, 140, 125, 0.16);
+  --water-line: #6f8373;
+  --bore: rgba(150, 125, 90, 0.2);
+  --pipe-steel: #55555a;
+  --dim: #2b2a28;
+  --shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+  --shadow-pop: 0 12px 32px rgba(15, 15, 15, 0.14), 0 2px 6px rgba(15, 15, 15, 0.08);
+}

@@ -1,0 +1,380 @@
+<!--
+  HDD Pipe Push / Pull Force & Buckling Calculator
+  Single-file engineering tool. Reproduces "Push force Calculation.xlsx" (updated revision:
+  36" x 12.7mm X70, R=750m) and adds a structural safety assessment. All computation is
+  client-side; "Generate PDF" uses the browser's native Save-as-PDF. No dependencies, offline.
+  Default "curve model = sheet" matches the spreadsheet exactly; a toggle applies the
+  engineering-corrected entry-tension / exit-growth treatment. Formulas are not shown.
+-->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HDD Push / Pull Force Calculator</title>
+<style>
+  :root{
+    --bg:#eef1f5; --panel:#fff; --ink:#1b2733; --muted:#5f6f7e; --line:#d7dee6;
+    --accent:#0b5cab; --accent2:#093f78; --th:#eef4fa;
+    --pass:#0e7a4b; --passbg:#e8f6ee; --warn:#a9620a; --warnbg:#fdf3e3;
+    --fail:#b3261e; --failbg:#fdeceb; --result:#0b3d62;
+    --shadow:0 1px 3px rgba(16,32,48,.08),0 6px 22px rgba(16,32,48,.07);
+  }
+  *{box-sizing:border-box} html,body{margin:0}
+  body{font:14px/1.55 "Segoe UI",system-ui,Arial,sans-serif; background:var(--bg); color:var(--ink)}
+  .topbar{position:sticky; top:0; z-index:20; display:flex; align-items:center; gap:14px; padding:12px 22px; background:var(--accent); color:#fff; box-shadow:0 2px 8px rgba(0,0,0,.15)}
+  .topbar h1{font-size:17px; margin:0; font-weight:600}
+  .topbar .sub{font-size:12px; opacity:.85}
+  .topbar .spacer{flex:1}
+  .btn{border:0; border-radius:6px; padding:9px 16px; font-size:13px; font-weight:600; cursor:pointer; background:#fff; color:var(--accent2)}
+  .btn:hover{background:#eaf2fb}
+  .btn.ghost{background:rgba(255,255,255,.14); color:#fff; border:1px solid rgba(255,255,255,.4)}
+  .btn.ghost:hover{background:rgba(255,255,255,.24)}
+  .wrap{max-width:1220px; margin:0 auto; padding:22px; display:grid; grid-template-columns:372px 1fr; gap:22px}
+  @media (max-width:1000px){ .wrap{grid-template-columns:1fr} }
+  .form{position:sticky; top:68px; align-self:start; max-height:calc(100vh - 90px); overflow:auto}
+  fieldset{border:1px solid var(--line); border-radius:10px; margin:0 0 13px; padding:11px 14px 13px; background:var(--panel); box-shadow:var(--shadow)}
+  legend{font-weight:700; font-size:12px; color:var(--accent2); padding:0 6px; text-transform:uppercase; letter-spacing:.5px}
+  .row{display:grid; grid-template-columns:1fr 90px 42px; gap:8px; align-items:center; margin:6px 0}
+  .row label{font-size:12.3px; color:var(--muted)}
+  .row input,.row select{width:100%; padding:6px 8px; border:1px solid var(--line); border-radius:6px; font-size:13px; text-align:right; background:#fcfdfe}
+  .row .unit{font-size:11px; color:var(--muted)}
+  .row input:focus,.row select:focus{outline:2px solid #bcd6f2; border-color:var(--accent)}
+  .chk{display:flex; gap:8px; align-items:flex-start; margin:6px 0; font-size:12.3px; color:var(--ink)}
+  .chk input{margin-top:2px}
+  .txtrow{margin:6px 0}
+  .txtrow label{display:block; font-size:11.3px; color:var(--muted); margin-bottom:2px}
+  .txtrow input{width:100%; padding:6px 8px; border:1px solid var(--line); border-radius:6px; font-size:13px}
+  .hint{font-size:10.8px; color:var(--warn); margin:2px 2px 0; line-height:1.35}
+  .sheet{background:var(--panel); border:1px solid var(--line); border-radius:10px; box-shadow:var(--shadow); padding:30px 36px}
+  .doc-head{display:flex; justify-content:space-between; align-items:flex-start; border-bottom:3px solid var(--accent); padding-bottom:12px}
+  .doc-head .title{font-size:21px; font-weight:700; color:var(--accent2)}
+  .doc-head .meta{font-size:12px; color:var(--muted); text-align:right; line-height:1.7}
+  .doc-head .meta b{color:var(--ink)}
+  .lead{font-size:12.5px; color:var(--muted); margin:12px 0 0}
+  h2.sec{font-size:13px; text-transform:uppercase; letter-spacing:.6px; color:var(--accent2); border-bottom:1px solid var(--line); padding-bottom:5px; margin:26px 0 6px}
+  h2.sec .n{display:inline-block; background:var(--accent); color:#fff; border-radius:5px; padding:1px 8px; margin-right:8px; font-size:12px}
+  p.desc{font-size:12px; color:var(--muted); margin:6px 0 8px}
+  table{width:100%; border-collapse:collapse; font-size:12.6px; margin:4px 0}
+  th,td{padding:6px 10px; border:1px solid var(--line); text-align:right}
+  th{background:var(--th); font-weight:600; text-align:right}
+  td.l,th.l{text-align:left} td.c,th.c{text-align:center}
+  td.sym{color:var(--muted); font-style:italic; text-align:center; width:48px}
+  td.u,th.u{color:var(--muted); text-align:left; width:70px}
+  tr.group td{background:#eef3f9; font-weight:700; text-align:left; color:var(--accent2)}
+  tr.cum td{background:#f0f7ff; font-weight:700}
+  .final{margin-top:14px; background:var(--result); color:#fff; border-radius:9px; padding:15px 20px; display:flex; justify-content:space-between; align-items:center}
+  .final .lbl{font-size:13px; opacity:.92; max-width:62%}
+  .final .val{font-size:27px; font-weight:700; white-space:nowrap}
+  .verdict{display:flex; align-items:center; gap:12px; border-radius:9px; padding:13px 16px; margin:10px 0; border:1px solid}
+  .verdict .ico{font-size:22px; line-height:1}
+  .verdict .txt{flex:1}
+  .verdict .tag{font-weight:700; font-size:14px}
+  .verdict .det{font-size:12px; opacity:.92}
+  .v-pass{background:var(--passbg); border-color:#bfe3cd; color:var(--pass)}
+  .v-warn{background:var(--warnbg); border-color:#f0d8ad; color:var(--warn)}
+  .v-fail{background:var(--failbg); border-color:#f3c3c0; color:var(--fail)}
+  .badge{display:inline-block; border-radius:20px; padding:1px 10px; font-size:11px; font-weight:700; color:#fff}
+  .b-pass{background:var(--pass)} .b-warn{background:var(--warn)} .b-fail{background:var(--fail)}
+  .overall{border-radius:10px; padding:16px 20px; margin:8px 0 2px; color:#fff; display:flex; gap:14px; align-items:center}
+  .overall.ok{background:linear-gradient(90deg,#0e7a4b,#12915a)}
+  .overall.no{background:linear-gradient(90deg,#b3261e,#cf372f)}
+  .overall .big{font-size:18px; font-weight:700} .overall .small{font-size:12px; opacity:.95}
+  .notes{margin-top:20px; background:#f7f9fc; border:1px solid var(--line); border-radius:9px; padding:13px 18px; font-size:11.8px; color:var(--muted)}
+  .notes b{color:var(--ink)}
+  .notes ol,.notes ul{margin:6px 0 0; padding-left:18px} .notes li{margin:4px 0}
+  .refs{margin-top:18px; font-size:11.6px; color:var(--ink)}
+  .refs ol{margin:6px 0 0; padding-left:20px} .refs li{margin:6px 0; color:var(--muted)} .refs li b{color:var(--ink)}
+  .foot{margin-top:18px; font-size:10.8px; color:var(--muted); text-align:center; border-top:1px solid var(--line); padding-top:8px}
+  .disc{font-size:10.6px; color:var(--muted); font-style:italic; margin-top:6px}
+  @media print{
+    @page{size:A4; margin:13mm 11mm} body{background:#fff}
+    .topbar,.form{display:none !important}
+    .wrap{display:block; max-width:none; margin:0; padding:0}
+    .sheet{border:0; box-shadow:none; border-radius:0; padding:0}
+    h2.sec{break-after:avoid}
+    table,tr,.final,.verdict,.overall,.notes,.refs{break-inside:avoid}
+    .final,.overall,.verdict,tr.group td,tr.cum td,th,h2.sec .n,.badge{-webkit-print-color-adjust:exact; print-color-adjust:exact}
+  }
+</style>
+
+<div class="topbar">
+  <h1>HDD Push / Pull Force &amp; Buckling Calculator</h1>
+  <span class="sub">Trenchless installation design</span>
+  <span class="spacer"></span>
+  <button class="btn ghost" onclick="loadDefaults()">Reset values</button>
+  <button class="btn" onclick="window.print()">⤓ Generate PDF</button>
+</div>
+
+<div class="wrap">
+  <form class="form" id="form" oninput="recalc()">
+    <fieldset>
+      <legend>Project</legend>
+      <div class="txtrow"><label>Project / Crossing name</label><input type="text" id="proj" value="HDD Crossing — Imampur Ghat"></div>
+      <div class="txtrow"><label>Client / Location</label><input type="text" id="loc" value=""></div>
+      <div class="txtrow"><label>Drawing / Doc no.</label><input type="text" id="docno" value=""></div>
+      <div class="txtrow"><label>Prepared by</label><input type="text" id="prep" value=""></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Pipe &amp; Material</legend>
+      <div class="row"><label>Pipe outside dia (D)</label><input type="number" step="any" id="D"><span class="unit">in</span></div>
+      <div class="row"><label>Wall thickness (t)</label><input type="number" step="any" id="t"><span class="unit">mm</span></div>
+      <div class="row"><label>Pipe grade (API 5L X-)</label><input type="number" step="any" id="grade"><span class="unit">X</span></div>
+      <div class="row"><label>Density of pipe (ρ<sub>pipe</sub>)</label><input type="number" step="any" id="rhoPipe"><span class="unit">kg/cm³</span></div>
+      <div class="row"><label>Young's modulus (E)</label><input type="number" step="any" id="E"><span class="unit">kg/cm²</span></div>
+      <div class="hint" id="ehint"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Mud &amp; Soil</legend>
+      <div class="row"><label>Fluid drag coeff (F<sub>mud</sub>)</label><input type="number" step="any" id="Fmud"><span class="unit">kg/cm²</span></div>
+      <div class="row"><label>Pipe–soil friction (μ)</label><input type="number" step="any" id="mu"><span class="unit">–</span></div>
+      <div class="row"><label>Density of mud (ρ<sub>mud</sub>)</label><input type="number" step="any" id="rhoMud"><span class="unit">kg/cm³</span></div>
+      <div class="row"><label>Soil density (D<sub>s</sub>)</label><input type="number" step="any" id="soil"><span class="unit">kg/cm³</span></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Crossing Geometry</legend>
+      <div class="row"><label>Entry angle</label><input type="number" step="any" id="entryAng"><span class="unit">deg</span></div>
+      <div class="row"><label>Exit angle</label><input type="number" step="any" id="exitAng"><span class="unit">deg</span></div>
+      <div class="row"><label>Radius of curvature (R)</label><input type="number" step="any" id="Rm"><span class="unit">m</span></div>
+      <div class="row"><label>Max depth of crossing (h)</label><input type="number" step="any" id="hmax"><span class="unit">m</span></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Section Lengths &amp; Depths (m)</legend>
+      <div class="row"><label>L1 entry-angular — length</label><input type="number" step="any" id="L1"><span class="unit">m</span></div>
+      <div class="row"><label>L1 depth</label><input type="number" step="any" id="d1"><span class="unit">m</span></div>
+      <div class="row"><label>L2 entry-curve — length</label><input type="number" step="any" id="L2"><span class="unit">m</span></div>
+      <div class="row"><label>L2 depth</label><input type="number" step="any" id="d2"><span class="unit">m</span></div>
+      <div class="row"><label>L3 straight — length</label><input type="number" step="any" id="L3"><span class="unit">m</span></div>
+      <div class="row"><label>L3 depth</label><input type="number" step="any" id="d3"><span class="unit">m</span></div>
+      <div class="row"><label>L4 exit-curve — length</label><input type="number" step="any" id="L4"><span class="unit">m</span></div>
+      <div class="row"><label>L4 depth</label><input type="number" step="any" id="d4"><span class="unit">m</span></div>
+      <div class="row"><label>L5 exit-angular — length</label><input type="number" step="any" id="L5"><span class="unit">m</span></div>
+      <div class="row"><label>L5 depth</label><input type="number" step="any" id="d5"><span class="unit">m</span></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Calculation Model &amp; Safety</legend>
+      <div class="chk"><input type="checkbox" id="corrected"><label for="corrected"><b>Use engineering-corrected curve model</b> — link entry-curve initial tension to the force entering the bend, and apply the friction growth term on the exit curve. Unchecked = reproduce the spreadsheet exactly.</label></div>
+      <div class="row"><label>Entry-curve initial tension T₁ (sheet mode)</label><input type="number" step="any" id="T1"><span class="unit">Ton</span></div>
+      <div class="row"><label>Allowable stress factor (× SMYS)</label><input type="number" step="any" id="df"><span class="unit">–</span></div>
+      <div class="hint">0.90 = HDD practice · 0.72 = ASME B31.8 · 1.00 = pure yield.</div>
+    </fieldset>
+  </form>
+
+  <div class="sheet" id="sheet"></div>
+</div>
+
+<script>
+"use strict";
+/* Defaults match the UPDATED "Push force Calculation.xlsx" (36" x 12.7 mm X70, R=750 m). */
+const DEFAULTS = {
+  proj:"HDD Crossing — Imampur Ghat", loc:"", docno:"", prep:"",
+  D:36, t:12.7, grade:70, rhoPipe:9.7e-4, E:3568.95,
+  Fmud:0.0035, mu:0.3, rhoMud:1.1727117e-3, soil:2.66e-3,
+  entryAng:12, exitAng:10, Rm:750, hmax:24,
+  L1:213.9, d1:8.37, L2:103.7, d2:9.87, L3:2007.2, d3:0,
+  L4:0.883, d4:-51.67, L5:239.5, d5:-76.9,
+  T1:4.11, df:0.90, corrected:false
+};
+const E_SHEET=3568.95, E_STEEL=2039432, G=9806.65, N_TO_TON=0.0001019716, PSI_TO_KGCM2=0.070307;
+const $=id=>document.getElementById(id);
+const num=id=>parseFloat($(id).value);
+function loadDefaults(){ for(const k in DEFAULTS){ if(!$(k))continue; if(typeof DEFAULTS[k]==="boolean") $(k).checked=DEFAULTS[k]; else $(k).value=DEFAULTS[k]; } recalc(); }
+const fmt=(x,d=2)=> (x==null||isNaN(x))?"—":Number(x).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
+const sci=x=>Number(x).toExponential(4);
+
+/* ================= CORE CALCULATION (verified against the spreadsheet) ================= */
+function compute(){
+  const i={}; for(const k of ["D","t","grade","rhoPipe","E","Fmud","mu","rhoMud","soil",
+    "entryAng","exitAng","Rm","hmax","L1","d1","L2","d2","L3","d3","L4","d4","L5","d5","T1","df"]) i[k]=num(k);
+  const corrected=$("corrected").checked, mu=i.mu, PI=Math.PI;
+
+  const D=i.D*2.54, t=i.t/10, d_int=D-2*t, D_in=i.D;          // OD/wall to cm
+  const Rcm=i.Rm*100;
+  const L=[i.L1,i.L2,i.L3,i.L4,i.L5].map(x=>x*100);            // m -> cm
+  const dp=[i.d1,i.d2,i.d3,i.d4,i.d5].map(x=>x*100);
+  const Ltot=L.reduce((a,b)=>a+b,0);
+  const Ao=(3.14*D*D)/4, Ai=(3.14*d_int*d_int)/4, AoAi=Ao-Ai;
+  const Dhole=D_in*1.5;                                        // updated sheet: 1.5 x D(in)
+  const smysPsi=i.grade*1000, smysKg=smysPsi*PSI_TO_KGCM2;
+  const Bforce=Ao*i.rhoMud, Wair=AoAi*i.rhoPipe, Wnet=Wair-Bforce;
+  const entryRad=i.entryAng*PI/180, exitRad=i.exitAng*PI/180;
+
+  const Fa=(a,l)=>Math.abs(Wnet*Math.sin(a)*l)/1000;
+  const Ff=(a,l)=>mu*Math.abs(Wnet*Math.cos(a))*l/1000;
+  const Fd=(l)=>i.Fmud*PI*D*l/1000;
+  const Fp=(dep)=>i.rhoMud*dep*AoAi/1000;
+  function capstan(th1,th2,T1,gm){
+    const R=Rcm/100, W=Math.abs(Wnet)*0.0981, k=mu*mu+1;
+    const t1=t=>(mu*mu*R*W*Math.sin(t))/k, t2=t=>(R*W*Math.sin(t))/k, t3=t=>(2*mu*R*W*Math.cos(t))/k;
+    const A=(T1*G+t1(th1)-t2(th1)+t3(th1))/Math.exp(mu*th1);
+    return (A*Math.exp(gm*th2)-t1(th2)+t2(th2)-t3(th2))*N_TO_TON;
+  }
+
+  const s1={fa:Fa(entryRad,L[0]),ff:Ff(entryRad,L[0]),fd:Fd(L[0]),fp:Fp(dp[0])};
+  s1.net=s1.ff+s1.fd+s1.fp+s1.fa; const c1=s1.net;
+  const entryT1 = corrected ? c1 : i.T1;                       // sheet hard-codes 4.11
+  const s2={fc:capstan(entryRad,PI/2,entryT1,mu),fd:Fd(L[1]),fp:Fp(dp[1])};
+  s2.net=s2.fc+s2.fd+s2.fp; const c2=c1+s2.net;
+  const s3={fa:0,ff:Ff(0,L[2]),fd:Fd(L[2]),fp:Fp(dp[2])};
+  s3.net=s3.ff+s3.fd; const c3=c2+s3.net;
+  const exitGrowth = corrected ? mu : 0;                       // sheet references empty cell -> 0
+  const s4={fc:capstan(PI/2,exitRad,c3,exitGrowth),fd:Fd(L[3]),fp:Fp(dp[3])};
+  s4.net=s4.fc+s4.fd+s4.fp; const c4=c3+s4.net;
+  const s5={fa:Fa(exitRad,L[4]),ff:Ff(exitRad,L[4]),fd:Fd(L[4]),fp:Fp(dp[4])};
+  s5.net=s5.fa+s5.ff+s5.fd+s5.fp; const c5=c4+s5.net;
+  const total=c5;
+
+  const I=PI*(Math.pow(D,4)-Math.pow(d_int,4))/64;
+  const alpha=(90-i.exitAng)*PI/180, clr=((Dhole-D_in)/2)*2.54, w=Wair;   // clearance in cm
+  const Fcrs=(2*Math.sqrt((i.E*I*w*Math.sin(alpha))/Math.abs(clr)))/1000;
+  const Pcrs=1+0.193*Math.pow(mu,0.67), Acrs=0.774*Math.pow(mu,0.33)-0.371*mu;
+  const Bcrs=(0.5*Pcrs*Pcrs*(1-1.5*Acrs*Acrs))+((1/(2*Pcrs*Pcrs))*(1+0.125*Acrs*Acrs+8*mu/(PI*Acrs)));
+  const GaoSin=Fcrs*Bcrs, Bcrh=Math.sqrt((30*(3.14+2*mu))/(3.14*(15-7*mu*PI))), GaoHel=Bcrh*Fcrs;
+
+  const Asteel=AoAi, loadKg=total*1000, sigma=loadKg/Asteel;
+  const allow=i.df*smysKg, strengthPass=sigma<=allow, util=sigma/allow, sfYield=smysKg/sigma;
+  const sinCap=Fcrs, helCap=GaoHel;
+  let buckClass, buckState;
+  if(total<sinCap){ buckClass="pass"; buckState="No buckling — installation load is below the sinusoidal initiation load."; }
+  else if(total<helCap){ buckClass="warn"; buckState="Sinusoidal (lateral) buckling onset — load exceeds the sinusoidal load but is below helical lock-up."; }
+  else { buckClass="fail"; buckState="Helical buckling — load exceeds the helical buckling capacity; a pushed installation would lock up / yield."; }
+  const sfBuck=sinCap/total, overallOk=strengthPass && buckClass==="pass";
+
+  return {i,corrected,D,d_int,D_in,Ltot,Ao,Ai,AoAi,Dhole,smysPsi,smysKg,Bforce,Wair,Wnet,
+    sec:[
+      {n:1,name:"L1 — Entry angular",L:L[0],depth:dp[0],ang:i.entryAng,...s1,cum:c1},
+      {n:2,name:"L2 — Entry curve",  L:L[1],depth:dp[1],roc:Rcm,       ...s2,cum:c2},
+      {n:3,name:"L3 — Horizontal",   L:L[2],depth:dp[2],ang:0,         ...s3,cum:c3},
+      {n:4,name:"L4 — Exit curve",   L:L[3],depth:dp[3],roc:Rcm,       ...s4,cum:c4},
+      {n:5,name:"L5 — Exit angular", L:L[4],depth:dp[4],ang:i.exitAng, ...s5,cum:c5},
+    ], total,
+    buck:{I,alpha,clr,Fcrs,GaoSin,GaoHel,Bcrs,Bcrh},
+    safe:{Asteel,sigma,allow,strengthPass,util,sfYield,sinCap,helCap,buckState,buckClass,sfBuck,overallOk}};
+}
+
+/* ================= RENDER ================= */
+function recalc(){
+  const eNow=num('E');
+  $('ehint').innerHTML = Math.abs(eNow-E_SHEET)<1
+    ? "⚠ Source-sheet value; far below steel (≈2.04×10⁶ kg/cm²). Buckling capacity is understated ~24×."
+    : (Math.abs(eNow-E_STEEL)<2 ? "Standard structural steel (200 GPa)." : "");
+  let R; try{ R=compute(); }catch(e){ $('sheet').innerHTML="<p class='lead'>Enter valid numbers…</p>"; return; }
+  const today=new Date().toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"});
+  const i=R.i, S=R.safe;
+  const cd={fc:"Curvature",fa:"Axial weight",ff:"Soil friction",fd:"Mud drag",fp:"Mud pressure"};
+
+  const secRows=R.sec.map(s=>{
+    const parts=[]; ["fc","fa","ff","fd","fp"].forEach(k=>{ if(s[k]!=null) parts.push(`${cd[k]} ${fmt(s[k])}`); });
+    return `<tr class="group"><td colspan="3">Section ${s.n}: ${s.name}</td>
+        <td colspan="3" style="text-align:right;font-weight:400" class="muted">L = ${fmt(s.L/100,1)} m${s.roc?` · ROC ${fmt(s.roc/100,0)} m`:""}${s.ang!=null?` · θ ${fmt(s.ang,0)}°`:""} · depth ${fmt(s.depth/100,1)} m</td></tr>
+      <tr><td class="l" colspan="5">${parts.join(" &nbsp;·&nbsp; ")}</td><td><b>${fmt(s.net)}</b></td></tr>
+      <tr class="cum"><td class="l" colspan="5">Cumulative force to end of Section ${s.n}</td><td>${fmt(s.cum)}</td></tr>`;
+  }).join("");
+
+  const ov = S.overallOk
+    ? `<div class="overall ok"><div style="font-size:26px">✓</div><div><div class="big">DESIGN ACCEPTABLE</div>
+        <div class="small">Pipe stress is within the allowable limit and the installation load stays below the buckling initiation load.</div></div></div>`
+    : `<div class="overall no"><div style="font-size:26px">!</div><div><div class="big">DESIGN NOT ACCEPTABLE — REVIEW REQUIRED</div>
+        <div class="small">${!S.strengthPass?"Axial stress exceeds the allowable limit. ":""}${S.buckClass!=="pass"?"Installation load reaches the buckling regime — consider a pull-back installation rather than pushing.":""}</div></div></div>`;
+
+  $('sheet').innerHTML = `
+    <div class="doc-head">
+      <div><div class="title">${esc($('proj').value)||"HDD Push / Pull Force Calculation"}</div>
+        <div class="muted" style="font-size:12px;margin-top:3px">Installation Force &amp; Structural Safety Assessment — Horizontal Directional Drilling</div></div>
+      <div class="meta">
+        ${$('loc').value?`<b>Location:</b> ${esc($('loc').value)}<br>`:""}
+        ${$('docno').value?`<b>Doc No.:</b> ${esc($('docno').value)}<br>`:""}
+        ${$('prep').value?`<b>Prepared by:</b> ${esc($('prep').value)}<br>`:""}
+        <b>Date:</b> ${today}</div></div>
+    <p class="lead">This report determines the force required to install a steel pipeline across a directionally-drilled
+      crossing and verifies the pipe against axial over-stress and column buckling during installation. The alignment is
+      analysed as five segments — two angular tangents, two curved sections and a horizontal run — with the installation
+      force accumulated segment-by-segment in the direction of travel.</p>
+
+    <h2 class="sec"><span class="n">1</span>Design Inputs</h2>
+    <table>
+      <tr><th class="l">Parameter</th><th class="sym">Sym</th><th>Value</th><th class="u">Unit</th><th class="l">Parameter</th><th>Value</th><th class="u">Unit</th></tr>
+      <tr><td class="l">Pipe outside diameter</td><td class="sym">D</td><td>${fmt(i.D,1)} (${fmt(R.D,2)})</td><td class="u">in (cm)</td><td class="l">Entry angle</td><td>${fmt(i.entryAng,1)}</td><td class="u">deg</td></tr>
+      <tr><td class="l">Wall thickness</td><td class="sym">t</td><td>${fmt(i.t,2)}</td><td class="u">mm</td><td class="l">Exit angle</td><td>${fmt(i.exitAng,1)}</td><td class="u">deg</td></tr>
+      <tr><td class="l">Pipe grade (API 5L)</td><td class="sym">X</td><td>${fmt(i.grade,0)}</td><td class="u">—</td><td class="l">Radius of curvature</td><td>${fmt(i.Rm,0)}</td><td class="u">m</td></tr>
+      <tr><td class="l">Pipe–soil friction</td><td class="sym">μ</td><td>${fmt(i.mu,3)}</td><td class="u">—</td><td class="l">Fluid drag coefficient</td><td>${fmt(i.Fmud,4)}</td><td class="u">kg/cm²</td></tr>
+      <tr><td class="l">Density of drilling mud</td><td class="sym">ρ<sub>mud</sub></td><td>${sci(i.rhoMud)}</td><td class="u">kg/cm³</td><td class="l">Density of pipe</td><td>${sci(i.rhoPipe)}</td><td class="u">kg/cm³</td></tr>
+      <tr><td class="l">Total crossing length</td><td class="sym">L</td><td>${fmt(R.Ltot/100,1)}</td><td class="u">m</td><td class="l">Young's modulus</td><td>${fmt(i.E,0)}</td><td class="u">kg/cm²</td></tr>
+    </table>
+
+    <h2 class="sec"><span class="n">2</span>Pipe Properties &amp; Submerged Weight</h2>
+    <table>
+      <tr><th class="l">Quantity</th><th class="sym">Sym</th><th>Value</th><th class="u">Unit</th><th class="l">Description</th></tr>
+      <tr><td class="l">Internal diameter</td><td class="sym">d</td><td>${fmt(R.d_int)}</td><td class="u">cm</td><td class="l">Bore of the carrier pipe</td></tr>
+      <tr><td class="l">Steel cross-sectional area</td><td class="sym">A<sub>s</sub></td><td>${fmt(R.AoAi)}</td><td class="u">cm²</td><td class="l">Load-bearing metal area</td></tr>
+      <tr><td class="l">Reamed hole diameter</td><td class="sym">D<sub>hole</sub></td><td>${fmt(R.Dhole)}</td><td class="u">in</td><td class="l">Required borehole size (1.5 × D)</td></tr>
+      <tr><td class="l">Specified min. yield (SMYS)</td><td class="sym">S</td><td>${fmt(R.smysPsi,0)}</td><td class="u">psi</td><td class="l">Grade × 1000</td></tr>
+      <tr><td class="l">SMYS</td><td class="sym">S</td><td>${fmt(R.smysKg,1)}</td><td class="u">kg/cm²</td><td class="l">Converted (× 0.070307)</td></tr>
+      <tr><td class="l">Buoyant force on pipe</td><td class="sym">B</td><td>${fmt(R.Bforce,4)}</td><td class="u">kg/cm</td><td class="l">Uplift from displaced mud</td></tr>
+      <tr><td class="l">Weight of empty pipe in air</td><td class="sym">W<sub>a</sub></td><td>${fmt(R.Wair,4)}</td><td class="u">kg/cm</td><td class="l">Self-weight per unit length</td></tr>
+      <tr class="cum"><td class="l">Net submerged weight</td><td class="sym">W<sub>net</sub></td><td>${fmt(R.Wnet,4)}</td><td class="u">kg/cm</td><td class="l">${R.Wnet<0?"Negative ⇒ pipe is buoyant in mud":"Pipe rests on the borehole"}</td></tr>
+    </table>
+
+    <h2 class="sec"><span class="n">3</span>Installation Force by Section</h2>
+    <p class="desc">Each section contributes resistance from up to five sources, all in metric tons: <b>axial weight</b>
+      (gravity component along the pipe), <b>soil friction</b> (pipe bearing on the bore wall), <b>mud drag</b>
+      (viscous shear of drilling fluid on the pipe), <b>mud pressure</b> (hydrostatic head on the section) and, for
+      curves, a <b>curvature</b> term capturing the capstan (belt-friction) tension build-up around the bend. The
+      right-hand column carries the running total. Curve model: <b>${R.corrected?"engineering-corrected":"as per spreadsheet"}</b>.</p>
+    <table><tr><th class="l" colspan="5">Resistance contributions (Ton)</th><th>Section / Cum.</th></tr>${secRows}</table>
+    <div class="final"><div class="lbl">TOTAL INSTALLATION FORCE REQUIRED<br><span style="font-size:11px;opacity:.8">(maximum push / pull at the rig, end of crossing)</span></div>
+      <div class="val">${fmt(R.total)} <span style="font-size:15px;font-weight:500">Ton</span></div></div>
+
+    <h2 class="sec"><span class="n">4</span>Structural Safety Assessment</h2>
+    <p class="desc"><b>4.1 Axial stress check.</b> The installation force is carried by the steel cross-section; the resulting axial stress is compared with the allowable stress (${fmt(i.df,2)} × SMYS).</p>
+    <table>
+      <tr><th class="l">Check</th><th>Value</th><th class="u">Unit</th><th class="l">Limit / remark</th></tr>
+      <tr><td class="l">Applied axial stress</td><td>${fmt(S.sigma,1)}</td><td class="u">kg/cm²</td><td class="l">Total force ÷ steel area</td></tr>
+      <tr><td class="l">Allowable stress</td><td>${fmt(S.allow,1)}</td><td class="u">kg/cm²</td><td class="l">${fmt(i.df,2)} × SMYS</td></tr>
+      <tr><td class="l">Utilisation</td><td>${fmt(S.util*100,1)}</td><td class="u">%</td><td class="l">Applied ÷ allowable</td></tr>
+      <tr class="cum"><td class="l">Factor of safety vs. yield</td><td>${fmt(S.sfYield,2)}</td><td class="u">—</td><td class="l">SMYS ÷ applied stress</td></tr>
+    </table>
+    <div class="verdict v-${S.strengthPass?"pass":"fail"}"><div class="ico">${S.strengthPass?"✓":"✕"}</div>
+      <div class="txt"><div class="tag">Axial strength: ${S.strengthPass?"SAFE":"OVER-STRESSED"} <span class="badge b-${S.strengthPass?"pass":"fail"}">${fmt(S.util*100,1)}% utilised</span></div>
+        <div class="det">${S.strengthPass?`The pipe wall carries the installation force with a factor of safety of ${fmt(S.sfYield,2)} against yield.`:`Axial stress exceeds the allowable limit — increase wall thickness, raise pipe grade, or reduce the installation force.`}</div></div></div>
+
+    <p class="desc"><b>4.2 Buckling check.</b> Under compressive push the pipe acts as a constrained column inside the borehole. The installation force is compared with the sinusoidal (lateral snaking) initiation load and the helical (lock-up) load.</p>
+    <table>
+      <tr><th class="l">Buckling mode</th><th>Capacity (Ton)</th><th class="l">Method</th><th class="c">vs. ${fmt(R.total)} Ton</th></tr>
+      <tr><td class="l">Sinusoidal (initiation)</td><td>${fmt(R.buck.Fcrs)}</td><td class="l">Dawson–Paslay</td><td class="c">${R.total<R.buck.Fcrs?"<span class='badge b-pass'>OK</span>":"<span class='badge b-fail'>exceeded</span>"}</td></tr>
+      <tr><td class="l">Sinusoidal (with friction)</td><td>${fmt(R.buck.GaoSin)}</td><td class="l">Gao et&nbsp;al. (2010)</td><td class="c">${R.total<R.buck.GaoSin?"<span class='badge b-pass'>OK</span>":"<span class='badge b-fail'>exceeded</span>"}</td></tr>
+      <tr><td class="l">Helical (lock-up)</td><td>${fmt(R.buck.GaoHel)}</td><td class="l">Gao et&nbsp;al. (2010)</td><td class="c">${R.total<R.buck.GaoHel?"<span class='badge b-pass'>OK</span>":"<span class='badge b-fail'>exceeded</span>"}</td></tr>
+    </table>
+    <div class="verdict v-${S.buckClass}"><div class="ico">${S.buckClass==="pass"?"✓":(S.buckClass==="warn"?"▲":"✕")}</div>
+      <div class="txt"><div class="tag">Buckling: ${S.buckClass==="pass"?"NO BUCKLING":(S.buckClass==="warn"?"SINUSOIDAL ONSET":"HELICAL BUCKLING")}
+        ${S.buckClass==="pass"?`<span class="badge b-pass">FoS ${fmt(S.sfBuck,2)}</span>`:""}</div>
+        <div class="det">${S.buckState}</div></div></div>
+    ${ov}
+
+    <h2 class="sec"><span class="n">5</span>Notes &amp; Assumptions</h2>
+    <div class="notes"><ul>
+      <li>Installation force is the maximum thrust/pull at the rig, accumulated from the start of the bore to the exit.</li>
+      <li>Curved-section forces use the radius of curvature R = ${fmt(i.Rm,0)} m and the capstan (belt-friction) relationship. ${R.corrected?"<b>Corrected model:</b> the entry-curve initial tension is taken as the force entering the bend, and the exit-curve growth term uses μ.":`<b>Spreadsheet model:</b> the entry-curve initial tension is fixed at ${fmt(i.T1)} Ton and the exit-curve growth term equals 1 (these reproduce the source sheet — see flagged items below).`}</li>
+      <li>Young's modulus is ${fmt(i.E,0)} kg/cm². ${Math.abs(i.E-E_SHEET)<1?"This is the source-sheet value; the physically-correct value for steel is ≈2.04×10⁶ kg/cm² (200 GPa), which raises the buckling capacity ~24×. Verify before relying on the buckling result.":(Math.abs(i.E-E_STEEL)<2?"Standard value for structural / API line-pipe steel (200 GPa).":"")}</li>
+      <li>Allowable stress factor = ${fmt(i.df,2)} × SMYS; SMYS is derived from the pipe grade (grade × 1000 psi → kg/cm²).</li>
+      <li>Buckling capacities assume the pipe is laterally supported by the borehole wall. The sinusoidal load marks the onset of lateral snaking; the helical load marks lock-up. For long crossings the high compressive push force typically governs — such crossings are normally installed by pull-back rather than pushing.</li>
+    </ul></div>
+
+    <h2 class="sec"><span class="n">6</span>References &amp; Basis of Calculation</h2>
+    <div class="refs"><ol>
+      <li><b>PRCI / ASCE — “Installation of Pipelines by Horizontal Directional Drilling: An Engineering Design Guide.”</b> Pipeline Research Council International (AGA PR-227-9424). Basis for the segmental friction, fluid-drag and pressure model in Section 3.</li>
+      <li><b>ASTM F1962</b> — “Standard Guide for Use of Maxi-Horizontal Directional Drilling for Placement of Polyethylene Pipe or Conduit Under Obstacles, Including River Crossings.” Pull/push-force methodology and capstan treatment of curved sections.</li>
+      <li><b>Dawson, R. &amp; Paslay, M. B. (1984)</b> — “Drillpipe Buckling in Inclined Holes,” <i>Journal of Petroleum Technology</i>, 36(10), 1734–1738. Sinusoidal buckling load.</li>
+      <li><b>Gao, G. &amp; Miska, S. Z. (2010)</b> — “Effects of Friction on Post-Buckling Behavior and Axial Load Transfer in a Horizontal Well,” <i>SPE Journal</i>. Friction-corrected sinusoidal (β<sub>crs</sub>) and helical (β<sub>crh</sub>) buckling loads.</li>
+      <li><b>Euler–Eytelwein (capstan) equation</b> — classical belt-friction relationship for tension build-up around a curved surface; applied to the drilled curved sections.</li>
+      <li><b>ASME B31.4 / B31.8</b> — allowable-stress and design-factor basis for liquid and gas transmission piping; axial stress acceptance criterion (Section 4).</li>
+      <li><b>API 5L</b> — Specification for Line Pipe; specified minimum yield strength (SMYS) by grade.</li>
+    </ol></div>
+    <p class="disc">Disclaimer: This calculation is an engineering aid for HDD installation planning. Results depend on the accuracy of the input soil, mud and geometry parameters and must be reviewed and approved by a qualified engineer before construction.</p>
+    <div class="foot">HDD Push / Pull Force &amp; Buckling Calculator · prepared ${today}</div>`;
+}
+function esc(s){ return (s||"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
+loadDefaults();
+</script>

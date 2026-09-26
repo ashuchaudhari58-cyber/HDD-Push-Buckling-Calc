@@ -1,0 +1,123 @@
+[
+  {
+    "file": "hdd-rig-site.webp",
+    "slot": "hdd-rig-site",
+    "title": "Drilling Rig 1",
+    "author": "LKyle89",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "source": "Wikimedia Commons",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Drilling_Rig_1.jpg",
+    "description": "Large (maxi) HDD rig on timber crane mats at a pipeline crossing site: inclined rig ramp, carriage/top drive and drill pipe, excavator behind.",
+    "ai": false
+  },
+  {
+    "file": "hdd-pullback.webp",
+    "slot": "hdd-pullback",
+    "title": "HDD Overbend 1",
+    "author": "LKyle89",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "source": "Wikimedia Commons",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:HDD_Overbend_1.jpg",
+    "description": "HDD pullback of a large-diameter pipeline: the pipe string supported by a line of cranes on an overbend beside a pond, reservoir in the background.",
+    "ai": false
+  },
+  {
+    "file": "river-crossing.webp",
+    "slot": "river-crossing",
+    "title": "Pipelinebau in der Ukraine",
+    "author": "JonnyBrazil",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+    "source": "Wikimedia Commons",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Pipelinebau_in_der_Ukraine.jpg",
+    "description": "Pipeline construction at a river crossing near Skole, Ukraine: coated pipe strings on the bank running towards the river.",
+    "ai": false
+  },
+  {
+    "file": "pipe-string.webp",
+    "slot": "pipe-string",
+    "title": "Fase varo 02",
+    "author": "UgoLazzarini",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "source": "Wikimedia Commons",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Fase_varo_02.jpg",
+    "description": "Welded, coated steel pipeline string on the launch track; two sidebooms lift it into the launch catenary ahead of a push installation.",
+    "ai": false
+  },
+  {
+    "file": "steel-pipe.webp",
+    "slot": "steel-pipe",
+    "title": "STEGAL pipeline construction site Germany",
+    "author": "Thuringius",
+    "license": "CC0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "source": "Wikimedia Commons",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:STEGAL_pipeline_construction_site_Germany.jpg",
+    "description": "Large-diameter coated steel line-pipe joints laid out on timber skids along a gas pipeline right-of-way (bevelled ends visible).",
+    "ai": false
+  },
+  {
+    "file": "hdpe-pipe.webp",
+    "slot": "hdpe-pipe",
+    "title": "Polyethylene Pipe lengths",
+    "author": "GordonJ86",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "source": "Wikimedia Commons",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Polyethylene_Pipe_lengths.jpg",
+    "description": "Black extruded HDPE pipe lengths with coloured (purple) longitudinal stripes, stacked in a yard.",
+    "ai": false
+  },
+  {
+    "file": "drill-pipe.webp",
+    "slot": "drill-pipe",
+    "title": "Wiertnica142",
+    "author": "Ciacho5",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+    "source": "Wikimedia Commons",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Wiertnica142.JPG",
+    "description": "Close-up of an HDD rig: rod magazine full of drill rods, vise/wrench and drill rod entering the ground with drilling fluid.",
+    "ai": false
+  },
+  {
+    "file": "road-crossing.webp",
+    "slot": "road-crossing",
+    "title": "Ditch Witch JT1220 Horizontal Directional Drill Hamburg Michigan",
+    "author": "Dwight Burdette",
+    "license": "CC BY 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/3.0/",
+    "source": "Wikimedia Commons",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ditch_Witch_JT1220_Horizontal_Directional_Drill_Hamburg_Michigan.JPG",
+    "description": "Compact HDD rig drilling on the embankment beside highway M-36 (Hamburg, Michigan), traffic barrels at the roadside.",
+    "ai": false
+  },
+  {
+    "file": "pipe-yard.webp",
+    "slot": "pipe-yard",
+    "title": "Cluden to Brighouse gas pipeline construction - geograph.org.uk - 5501715",
+    "author": "Neil Theasby",
+    "license": "CC BY-SA 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0/",
+    "source": "Wikimedia Commons",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Cluden_to_Brighouse_gas_pipeline_construction_-_geograph.org.uk_-_5501715.jpg",
+    "description": "Coated steel gas-pipeline joints (yellow internal lining) laid out on timber skids along a rural right-of-way.",
+    "ai": false
+  },
+  {
+    "file": "pipe-thruster.webp",
+    "slot": "pipe-thruster",
+    "title": "Thruster pipe 02",
+    "author": "UgoLazzarini",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "source": "Wikimedia Commons",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Thruster_pipe_02.jpg",
+    "description": "Pipe thruster (hydraulic push unit with clamp) pushing a coated steel pipeline string that is held by cranes; launch pit and site cabins.",
+    "ai": false,
+    "edited": "cropped"
+  }
+]
