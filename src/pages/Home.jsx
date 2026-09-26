@@ -5,20 +5,21 @@ import { useStore } from '../state/store.jsx';
 import { Kpi, fmt, Status, Callout } from '../components/ui.jsx';
 import { ProfileSVG } from '../components/drawings.jsx';
 import { asset } from '../lib/asset.js';
+import { WorkflowGlyph } from '../components/glyphs.jsx';
 import { PRESETS, newProject } from '../engine/presets.js';
 import { runProject } from '../engine/index.js';
 import { MATERIALS } from '../engine/materials.js';
 import { CROSSING_TYPES } from '../engine/profile.js';
 
 const WF = [
-  { to: '/project', n: '01', t: 'Project & revisions', d: 'Project name, location, document number, sign-off and revision history.', img: 'images/pipe-string-sm.webp' },
-  { to: '/inputs', n: '02', t: 'Design inputs', d: 'Pipe material & grade, drilling fluid, crossing profile, method, buckling and thruster data.', img: 'images/pipe-yard-sm.webp' },
-  { to: '/profile', n: '03', t: 'Profile geometry', d: 'Tangents, curves and bottom run from angles, radii and depth — setbacks and cover check.', img: 'images/river-crossing-sm.webp' },
-  { to: '/steps', n: '04', t: 'Calculation steps', d: 'Every formula with substituted values — a complete audit trail of the push force.', img: 'images/drill-pipe-sm.webp' },
-  { to: '/results', n: '05', t: 'Push force results', d: 'Installation force, force vs chainage and the live installation simulation.', img: 'images/hdd-pullback-sm.webp' },
-  { to: '/structural', n: '06', t: 'Stress & buckling', d: 'Axial stress utilisation and sinusoidal / helical buckling in the bore.', img: 'images/steel-pipe-sm.webp' },
-  { to: '/clamp', n: '07', t: 'Thruster & clamp', d: 'Required clamp force, thruster grip capacity and pipe-wall crush limit.', img: 'images/pipe-thruster-sm.webp' },
-  { to: '/report', n: '10', t: 'Report / PDF', d: 'Engineering calculation report with cover page, tables, drawings and sign-off.', img: 'images/pipe-string-sm.webp' },
+  { to: '/project', n: '01', t: 'Project & revisions', d: 'Project name, location, document number, sign-off and revision history.', glyph: 'project' },
+  { to: '/inputs', n: '02', t: 'Design inputs', d: 'Pipe material & grade, drilling fluid, crossing profile, method, buckling and thruster data.', glyph: 'inputs' },
+  { to: '/profile', n: '03', t: 'Profile geometry', d: 'Tangents, curves and bottom run from angles, radii and depth — setbacks and cover check.', glyph: 'profile' },
+  { to: '/steps', n: '04', t: 'Calculation steps', d: 'Every formula with substituted values — a complete audit trail of the push force.', glyph: 'steps' },
+  { to: '/results', n: '05', t: 'Push force results', d: 'Installation force, force vs chainage and the live installation simulation.', glyph: 'results' },
+  { to: '/structural', n: '06', t: 'Stress & buckling', d: 'Axial stress utilisation and sinusoidal / helical buckling in the bore.', glyph: 'structural' },
+  { to: '/clamp', n: '07', t: 'Thruster & clamp', d: 'Required clamp force, thruster grip capacity and pipe-wall crush limit.', glyph: 'clamp' },
+  { to: '/report', n: '10', t: 'Report / PDF', d: 'Engineering calculation report with cover page, tables, drawings and sign-off.', glyph: 'report' },
 ];
 
 export default function Home() {
@@ -105,7 +106,7 @@ export default function Home() {
       <div className="grid g4">
         {WF.map((w) => (
           <Link key={w.to} to={w.to} className="wf-card">
-            <div className="ph" style={{ backgroundImage: `url(${asset(w.img)})` }}><span className="n">{w.n}</span></div>
+            <div className="ph glyph"><WorkflowGlyph name={w.glyph} /><span className="n">{w.n}</span></div>
             <div className="bd"><b>{w.t}</b><small>{w.d}</small></div>
           </Link>
         ))}

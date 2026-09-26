@@ -332,7 +332,7 @@ export function CrossSection({ r, size = 240 }) {
   const S = size, c = S / 2;
   const Rh = c - 16;
   const k = Rh / (buck.Dhole / 2);
-  const Ro = (pipe.D / 2) * k, Ri = (pipe.d / 2) * k;
+  const Ro = Math.max(0, Math.min(Rh, (pipe.D / 2) * k)), Ri = Math.max(0, Math.min(Ro, (pipe.d / 2) * k)); // clamp for invalid inputs
   const buoyant = push.props.Wnet < 0;
   const cy = buoyant ? c - (Rh - Ro) : c + (Rh - Ro);
   const isPE = pipe.material === 'hdpe';
